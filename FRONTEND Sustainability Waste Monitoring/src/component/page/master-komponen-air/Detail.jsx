@@ -82,6 +82,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
           { id: withID }
         );
 
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data komponen.");
+        } else {
+          formDataRef.current = { ...formDataRef.current, ...data[0] };
+        }
         if (data === "ERROR" || !data || data.length === 0) {
           throw new Error("Gagal mengambil data komponen.");
         }
@@ -125,6 +130,16 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 : formatDate(value["Tanggal Perpindahan Komponen"]),
             "Volume Air":
               value["Volume Air"] === null ? "-" : value["Volume Air"],
+            "Tanggal Penggunaan Air":
+              value["Tanggal Penggunaan Air"] === "-"
+                ? "-"
+                : formatDate(value["Tanggal Penggunaan Air"]),
+            "Tanggal Perpindahan Komponen":
+              value["Tanggal Perpindahan Komponen"] === "-"
+                ? "-"
+                : formatDate(value["Tanggal Perpindahan Komponen"]),
+            "Volume Air":
+              value["Volume Air"] === null ? "-" : value["Volume Air"],
             Alignment: ["center", "center", "center", "center", "center"],
           }));
           setCurrentData(formattedData);
@@ -143,6 +158,14 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
 
   return (
     <>
+      {isError.error && (
+        <div className="flex-fill">
+          <Alert type="danger" message={isError.message} />
+        </div>
+      )}
+      <div className="card">
+        <div className="card-header bg-primary fw-medium text-white">
+          Detail Data Komponen vvvvvvvvv
       {isError.error && <Alert type="danger" message={isError.message} />}
 
       <div className="card mb-4">
@@ -155,20 +178,86 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
           <div className="row mb-3">
             <div className="col-lg-3">
               <Label
+                forLabel="nomorKomponen"
+                title="Nomor Komponen"
+                data={formDataRef.current.noKomponen}
+              />
+              <Label
                 title="Nomor Komponen"
                 data={formDataRef.current.noKomponen}
               />
             </div>
             <div className="col-lg-3">
+              <Label
+                forLabel="lokasiKomponen"
+                title="Lokasi"
+                data={formDataRef.current.lokasi}
+              />
               <Label title="Lokasi" data={formDataRef.current.lokasi} />
             </div>
             <div className="col-lg-3">
+              <Label
+                forLabel="kondisiKomponen"
+                title="Kondisi"
+                data={formDataRef.current.kondisi}
+              />
               <Label title="Kondisi" data={formDataRef.current.kondisi} />
             </div>
             <div className="col-lg-3">
+              <Label
+                forLabel="posisiKomponen"
+                title="Posisi"
+                data={formDataRef.current.posisi}
+              />
               <Label title="Posisi" data={formDataRef.current.posisi} />
             </div>
           </div>
+        </div>
+      </div>
+      <br />
+      <div className="lead fw-medium text-center">
+        History Penggunaan Air Komponen
+      </div>
+      <br />
+      <div className="d-flex flex-column">
+        <div className="flex-fill">
+          {/* <div className="input-group">
+            <Input
+              ref={searchQuery}
+              forInput="pencarianPenggunaanKomponen"
+              placeholder="Cari"
+            />
+            <Button
+              iconName="search"
+              classType="primary px-4"
+              title="Cari"
+              onClick={handleSearch}
+            />
+            <Filter>
+              <DropDown
+                ref={searchFilterSort}
+                forInput="ddUrut"
+                label="Urut Berdasarkan"
+                type="none"
+                arrData={dataFilterSort}
+                defaultValue="[Lokasi] asc"
+              />
+            </Filter>
+          </div> */}
+        </div>
+        <div className="mt-3">
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <div className="d-flex flex-column">
+              <Table data={currentData} isDetailTable={true} />
+              {/* <Paging
+                pageSize={PAGE_SIZE}
+                pageCurrent={currentFilter.page}
+                totalData={currentData[0]["Count"]}
+                navigation={handleSetCurrentPage}
+              /> */}
+            </div>
 
           {/* Map */}
           {formDataRef.current.latitude && formDataRef.current.longitude ? (
@@ -222,3 +311,4 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
     </>
   );
 }
+
