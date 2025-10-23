@@ -165,12 +165,7 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
       )}
       <div className="card">
         <div className="card-header bg-primary fw-medium text-white">
-          Detail Data Komponen vvvvvvvvv
-      {isError.error && <Alert type="danger" message={isError.message} />}
-
-      <div className="card mb-4">
-        <div className="card-header bg-primary text-white">
-          Detail Data Komponen
+          Detail Data Komponen 
         </div>
         <div className="card-body">
           <div className="row mb-3">
