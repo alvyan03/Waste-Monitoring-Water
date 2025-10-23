@@ -162,7 +162,7 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
       )}
       <div className="card">
         <div className="card-header bg-primary fw-medium text-white">
-          Detail Data Komponen vvvvvvvvvnmnmnmnmnm
+          Detail Data Komponen 
         </div>
         <div className="card-body p-4">
           <div className="row">
