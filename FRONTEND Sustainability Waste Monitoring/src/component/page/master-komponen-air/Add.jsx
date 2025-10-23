@@ -62,7 +62,6 @@ export default function MasterKomponenAdd({ onChangePage }) {
   }, []);
   // MENGAMBIL DAFTAR LOKASI -- END
 
-
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
     const validationError = await validateInput(name, value, userSchema);
@@ -94,9 +93,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
         );
 
         if (data === "ERROR") {
-          throw new Error(
-            "Terjadi kesalahan: Gagal menyimpan data komponen."
-          );
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data komponen.");
         } else {
           SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
           onChangePage("index");
@@ -125,7 +122,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Tambah Data Komponen Baru
+            Tambah Data Komponen Baru vvvvvvvvvvvvvssssss
           </div>
           <div className="card-body p-4">
             <div className="row">
