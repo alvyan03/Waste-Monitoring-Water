@@ -60,11 +60,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
           { id: withID }
         );
 
-        if (data === "ERROR" || !data || data.length === 0) {
-          throw new Error("Gagal mengambil data komponen.");
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data komponen.");
+        } else {
+          formDataRef.current = { ...formDataRef.current, ...data[0] };
         }
-
-        formDataRef.current = { ...formDataRef.current, ...data[0] };
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
@@ -99,6 +99,16 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 : formatDate(value["Tanggal Perpindahan Komponen"]),
             "Volume Air":
               value["Volume Air"] === null ? "-" : value["Volume Air"],
+            "Tanggal Penggunaan Air":
+              value["Tanggal Penggunaan Air"] === "-"
+                ? "-"
+                : formatDate(value["Tanggal Penggunaan Air"]),
+            "Tanggal Perpindahan Komponen":
+              value["Tanggal Perpindahan Komponen"] === "-"
+                ? "-"
+                : formatDate(value["Tanggal Perpindahan Komponen"]),
+            "Volume Air":
+              value["Volume Air"] === null ? "-" : value["Volume Air"],
             Alignment: ["center", "center", "center", "center", "center"],
           }));
           setCurrentData(formattedData);
@@ -115,57 +125,92 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
 
   return (
     <>
-      {isError.error && <Alert type="danger" message={isError.message} />}
-
-      <div className="card mb-4">
-        <div className="card-header bg-primary text-white">
-          Detail Data Komponen
+      {isError.error && (
+        <div className="flex-fill">
+          <Alert type="danger" message={isError.message} />
+        </div>
+      )}
+      <div className="card">
+        <div className="card-header bg-primary fw-medium text-white">
+          Detail Data Komponen vvvvvvvvv
         </div>
         <div className="card-body">
           <div className="row mb-3">
             <div className="col-lg-3">
               <Label
+                forLabel="nomorKomponen"
                 title="Nomor Komponen"
                 data={formDataRef.current.noKomponen}
               />
             </div>
             <div className="col-lg-3">
-              <Label title="Lokasi" data={formDataRef.current.lokasi} />
+              <Label
+                forLabel="lokasiKomponen"
+                title="Lokasi"
+                data={formDataRef.current.lokasi}
+              />
             </div>
             <div className="col-lg-3">
-              <Label title="Kondisi" data={formDataRef.current.kondisi} />
+              <Label
+                forLabel="kondisiKomponen"
+                title="Kondisi"
+                data={formDataRef.current.kondisi}
+              />
             </div>
             <div className="col-lg-3">
-              <Label title="Posisi" data={formDataRef.current.posisi} />
+              <Label
+                forLabel="posisiKomponen"
+                title="Posisi"
+                data={formDataRef.current.posisi}
+              />
             </div>
           </div>
-
-          {/* Map */}
-          {formDataRef.current.latitude && formDataRef.current.longitude ? (
-            <MapContainer
-              center={[
-                parseFloat(formDataRef.current.latitude),
-                parseFloat(formDataRef.current.longitude),
-              ]}
-              zoom={15}
-              style={{ height: 300, width: "100%" }}
-              scrollWheelZoom={false}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker
-                position={[
-                  parseFloat(formDataRef.current.latitude),
-                  parseFloat(formDataRef.current.longitude),
-                ]}
-              >
-                <Popup>
-                  {formDataRef.current.lokasi} <br />{" "}
-                  {formDataRef.current.posisi}
-                </Popup>
-              </Marker>
-            </MapContainer>
+        </div>
+      </div>
+      <br />
+      <div className="lead fw-medium text-center">
+        History Penggunaan Air Komponen
+      </div>
+      <br />
+      <div className="d-flex flex-column">
+        <div className="flex-fill">
+          {/* <div className="input-group">
+            <Input
+              ref={searchQuery}
+              forInput="pencarianPenggunaanKomponen"
+              placeholder="Cari"
+            />
+            <Button
+              iconName="search"
+              classType="primary px-4"
+              title="Cari"
+              onClick={handleSearch}
+            />
+            <Filter>
+              <DropDown
+                ref={searchFilterSort}
+                forInput="ddUrut"
+                label="Urut Berdasarkan"
+                type="none"
+                arrData={dataFilterSort}
+                defaultValue="[Lokasi] asc"
+              />
+            </Filter>
+          </div> */}
+        </div>
+        <div className="mt-3">
+          {isLoading ? (
+            <Loading />
           ) : (
-            <p className="text-center text-muted">Map tidak tersedia</p>
+            <div className="d-flex flex-column">
+              <Table data={currentData} isDetailTable={true} />
+              {/* <Paging
+                pageSize={PAGE_SIZE}
+                pageCurrent={currentFilter.page}
+                totalData={currentData[0]["Count"]}
+                navigation={handleSetCurrentPage}
+              /> */}
+            </div>
           )}
         </div>
       </div>
@@ -185,3 +230,4 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
     </>
   );
 }
+
