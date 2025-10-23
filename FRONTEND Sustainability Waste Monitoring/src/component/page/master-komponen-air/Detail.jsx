@@ -92,6 +92,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
         }
 
         formDataRef.current = { ...formDataRef.current, ...data[0] };
+        if (data === "ERROR" || data.length === 0) {
+          throw new Error("Terjadi kesalahan: Gagal mengambil data komponen.");
+        } else {
+          formDataRef.current = { ...formDataRef.current, ...data[0] };
+        }
       } catch (error) {
         setIsError({ error: true, message: error.message });
         setIsError({ error: true, message: error.message });
@@ -158,11 +163,14 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
 
   return (
     <>
-      {isError.error && <Alert type="danger" message={isError.message} />}
-
-      <div className="card mb-4">
-        <div className="card-header bg-primary text-white">
-          Detail Data Komponen
+      {isError.error && (
+        <div className="flex-fill">
+          <Alert type="danger" message={isError.message} />
+        </div>
+      )}
+      <div className="card">
+        <div className="card-header bg-primary fw-medium text-white">
+          Detail Data Komponen vvvvvvvvv
         </div>
         <div className="card-body">
           <div className="row mb-3">
@@ -175,6 +183,7 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 data={formDataRef.current.noKomponen}
               />
               <Label
+                forLabel="nomorKomponen"
                 title="Nomor Komponen"
                 data={formDataRef.current.noKomponen}
               />
@@ -186,6 +195,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 data={formDataRef.current.lokasi}
               />
               <Label title="Lokasi" data={formDataRef.current.lokasi} />
+              <Label
+                forLabel="lokasiKomponen"
+                title="Lokasi"
+                data={formDataRef.current.lokasi}
+              />
             </div>
             <div className="col-lg-3">
               <Label
@@ -194,6 +208,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 data={formDataRef.current.kondisi}
               />
               <Label title="Kondisi" data={formDataRef.current.kondisi} />
+              <Label
+                forLabel="kondisiKomponen"
+                title="Kondisi"
+                data={formDataRef.current.kondisi}
+              />
             </div>
             <div className="col-lg-3">
               <Label
@@ -202,6 +221,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 data={formDataRef.current.posisi}
               />
               <Label title="Posisi" data={formDataRef.current.posisi} />
+              <Label
+                forLabel="posisiKomponen"
+                title="Posisi"
+                data={formDataRef.current.posisi}
+              />
             </div>
           </div>
 
@@ -305,6 +329,53 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
             </MapContainer>
           ) : (
             <p className="text-center text-muted">Map tidak tersedia</p>
+          </div>
+        </div>
+      </div>
+      <br />
+      <div className="lead fw-medium text-center">
+        History Penggunaan Air Komponen
+      </div>
+      <br />
+      <div className="d-flex flex-column">
+        <div className="flex-fill">
+          {/* <div className="input-group">
+            <Input
+              ref={searchQuery}
+              forInput="pencarianPenggunaanKomponen"
+              placeholder="Cari"
+            />
+            <Button
+              iconName="search"
+              classType="primary px-4"
+              title="Cari"
+              onClick={handleSearch}
+            />
+            <Filter>
+              <DropDown
+                ref={searchFilterSort}
+                forInput="ddUrut"
+                label="Urut Berdasarkan"
+                type="none"
+                arrData={dataFilterSort}
+                defaultValue="[Lokasi] asc"
+              />
+            </Filter>
+          </div> */}
+        </div>
+        <div className="mt-3">
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <div className="d-flex flex-column">
+              <Table data={currentData} isDetailTable={true} />
+              {/* <Paging
+                pageSize={PAGE_SIZE}
+                pageCurrent={currentFilter.page}
+                totalData={currentData[0]["Count"]}
+                navigation={handleSetCurrentPage}
+              /> */}
+            </div>
           )}
         </div>
       </div>
