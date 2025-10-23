@@ -22,7 +22,9 @@ const Dashboard = lazy(() => import("../page/Dashboard/Root"));
 const DashboardAir = lazy(() => import("../page/Dashboard-Air/Root"));
 const EvaluasiTarget = lazy(() => import("../page/master-evaluasi-target/Root"));
 const Lokasi = lazy(() => import("../page/master-lokasi/Root"));
-const KomponenAir = lazy(() => import("../page/master-komponen-air/Root"));
+const MasterKomponen = lazy(() => import("../page/master-komponen-air/Root"));
+const TransaksiPenempatan = lazy(() => import("../page/transaksi-penempatan/Root"));
+const TransaksiPenggunaanAir = lazy(() =>import("../page/transaksi-penggunaan/Root"));
 
 
 const routeList = [
@@ -83,8 +85,16 @@ const routeList = [
     element: <Lokasi />,
   },
   {
+    path: "/penggunaan_air",
+    element: <TransaksiPenempatan />,
+  },
+  {
+    path: "/pemeliharaan_prefektif_air",
+    element: <TransaksiPenggunaanAir />,
+  },
+  {
     path: "/komponen_air",
-    element: <KomponenAir />,
+    element: <MasterKomponen />,
   },
 ];
 
