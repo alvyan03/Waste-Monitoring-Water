@@ -60,11 +60,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
           { id: withID }
         );
 
-        if (data === "ERROR" || data.length === 0) {
-          throw new Error("Terjadi kesalahan: Gagal mengambil data komponen.");
-        } else {
-          formDataRef.current = { ...formDataRef.current, ...data[0] };
+        if (data === "ERROR" || !data || data.length === 0) {
+          throw new Error("Gagal mengambil data komponen.");
         }
+
+        formDataRef.current = { ...formDataRef.current, ...data[0] };
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
@@ -138,37 +138,52 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
           <div className="row mb-3">
             <div className="col-lg-3">
               <Label
-                forLabel="nomorKomponen"
                 title="Nomor Komponen"
                 data={formDataRef.current.noKomponen}
               />
             </div>
             <div className="col-lg-3">
-              <Label
-                forLabel="lokasiKomponen"
-                title="Lokasi"
-                data={formDataRef.current.lokasi}
-              />
+              <Label title="Lokasi" data={formDataRef.current.lokasi} />
             </div>
             <div className="col-lg-3">
-              <Label
-                forLabel="kondisiKomponen"
-                title="Kondisi"
-                data={formDataRef.current.kondisi}
-              />
+              <Label title="Kondisi" data={formDataRef.current.kondisi} />
             </div>
             <div className="col-lg-3">
-              <Label
-                forLabel="posisiKomponen"
-                title="Posisi"
-                data={formDataRef.current.posisi}
-              />
+              <Label title="Posisi" data={formDataRef.current.posisi} />
             </div>
           </div>
+
+          {/* Map */}
+          {formDataRef.current.latitude && formDataRef.current.longitude ? (
+            <MapContainer
+              center={[
+                parseFloat(formDataRef.current.latitude),
+                parseFloat(formDataRef.current.longitude),
+              ]}
+              zoom={15}
+              style={{ height: 300, width: "100%" }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker
+                position={[
+                  parseFloat(formDataRef.current.latitude),
+                  parseFloat(formDataRef.current.longitude),
+                ]}
+              >
+                <Popup>
+                  {formDataRef.current.lokasi} <br />{" "}
+                  {formDataRef.current.posisi}
+                </Popup>
+              </Marker>
+            </MapContainer>
+          ) : (
+            <p className="text-center text-muted">Map tidak tersedia</p>
+          )}
         </div>
       </div>
-      <br />
-      <div className="lead fw-medium text-center">
+
+      <div className="mb-3 text-center fw-medium">
         History Penggunaan Air Komponen
       </div>
       <br />

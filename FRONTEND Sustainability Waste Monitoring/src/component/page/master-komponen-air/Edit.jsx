@@ -10,35 +10,34 @@ import DropDown from "../../part/Dropdown";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-import "leaflet/dist/leaflet.css";
-import Cookies from "js-cookie";
-import { encryptId, decryptId } from "../../util/Encryptor";
+import Label from "../../part/Label";
+import DropDown from "../../part/Dropdown";
 
-// Tambahkan no_komponen ke formData dan payload
+const letak = [
+  { Value: "Hulu", Text: "Hulu" },
+  { Value: "Hilir", Text: "Hilir" },
+];
+
 export default function MasterKomponenEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [listLokasi, setListLokasi] = useState([]);
-  const [position, setPosition] = useState(null);
-  const username = JSON.parse(decryptId(Cookies.get("activeUser"))).username;
-
   const [formData, setFormData] = useState({
     lokasi: "",
     kondisi: "",
-    posisi: "",
-    latitude: "",
-    longitude: "",
-    no_komponen: "",
+    lantai: "",
+    letak: "",
   });
 
   const userSchema = object({
-    lokasi: string().required("Harus dipilih"),
-    kondisi: string().required("Harus diisi"),
-    posisi: string().notRequired(),
-    latitude: string().notRequired(),
-    longitude: string().notRequired(),
-    no_komponen: string(),
+    nomorKomponen: string()
+      .max(100, "maksimum 100 karakter")
+      .required("harus diisi"),
+    kondisi: string().required("harus diisi"),
+    lantai: string().required("harus diisi"),
+    letak: string().required("harus diisi"),
+    idKomponen: string().required("harus diisi"),
   });
 
   useEffect(() => {
@@ -54,41 +53,12 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
         if (lokasiData === "ERROR")
           throw new Error("Gagal mengambil daftar lokasi.");
         setListLokasi(lokasiData);
-
-        const komponenData = await UseFetch(
-          API_LINK + "MasterKomponenAir/GetDataKomponenAirById",
-          { p1: withID }
-        );
-        if (komponenData === "ERROR" || komponenData.length === 0)
-          throw new Error("Gagal mengambil data komponen.");
-
-        const data = komponenData[0];
-
-        let lokasiValue = "";
-        if (Array.isArray(lokasiData)) {
-          const match = lokasiData.find(
-            (item) =>
-              item.Text?.toLowerCase().trim() ===
-              data.lokasi?.toLowerCase().trim()
-          );
-          if (match) lokasiValue = match.Value;
-        }
-
-        setFormData({
-          lokasi: lokasiValue || data.lantai || "",
-          kondisi: data.kondisi || "",
-          posisi: data.letak || "Hilir",
-          latitude: data.latitude || "",
-          longitude: data.longitude || "",
-          no_komponen: data.nomorKomponen || "",
-        });
-
-        if (data.latitude && data.longitude) {
-          setPosition({
-            lat: parseFloat(data.latitude),
-            lng: parseFloat(data.longitude),
-          });
-        }
+  
+        // Fetch data komponen berdasarkan ID
+        const komponenData = await UseFetch(API_LINK + "MasterKomponenAir/GetDataKomponenAirById", { id: withID });
+        console.log(komponenData); // Pastikan data komponen ada
+        if (komponenData === "ERROR" || komponenData.length === 0) throw new Error("Gagal mengambil data komponen.");
+        setFormData(komponenData[0]); // Update state formData dengan data komponen
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
@@ -133,29 +103,15 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
       setIsError({ error: false, message: "" });
       setErrors({});
 
-      // const username = localStorage.getItem("username") || "Admin";
-
-      const payload = {
-        p1: withID,
-        p2: formData.no_komponen, // <-- kirim no_komponen asli
-        p3: formData.kondisi,
-        p4: formData.lokasi,
-        p5: "",
-        p6: username, // <-- modif by sesuai login
-        p7: position.lat,
-        p8: position.lng,
-      };
-
       try {
-        const data = await UseFetch(
-          API_LINK + "MasterKomponenAir/EditKomponenAir",
-          payload
-        );
-        if (data === "ERROR")
-          throw new Error("Gagal memperbarui data komponen.");
+        const data = await UseFetch(API_LINK + "MasterKomponenAir/EditKomponenAir", formData);
 
-        SweetAlert("Sukses", "Data komponen berhasil diperbarui", "success");
-        onChangePage("index");
+        if (data === "ERROR") {
+          throw new Error("Terjadi kesalahan: Gagal menyimpan data komponen.");
+        } else {
+          SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
+          onChangePage("index");
+        }
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {

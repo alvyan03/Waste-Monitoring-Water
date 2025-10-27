@@ -113,13 +113,9 @@ export default function MasterKomponenAdd({ onChangePage }) {
           API_LINK + "MasterKomponenAir/CreateKomponenAir",
           payload
         );
-
-        if (data === "ERROR") {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data komponen.");
-        } else {
-          SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
-          onChangePage("index");
-        }
+        if (data === "ERROR") throw new Error("Gagal menyimpan data komponen.");
+        SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
+        onChangePage("index");
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
