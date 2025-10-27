@@ -10,6 +10,8 @@ import DropDown from "../../part/Dropdown";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
+
+const posisi = [{ Value: "Hilir", Text: "Hilir" }];
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -149,7 +151,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Tambah Data Komponen Baru vvvvvvvvvvvvvssssss
+            Tambah Data Komponen Baru
           </div>
           <div className="card-body p-4">
             <div className="row mb-3">
