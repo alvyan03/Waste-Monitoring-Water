@@ -207,7 +207,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Tambah Data Komponen Baru vvvvvvvvvvvvvssssss
+            Tambah Data Komponen Baru
           </div>
           <div className="card-body p-4">
             <div className="row mb-3">
