@@ -158,14 +158,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
 
   return (
     <>
-      {isError.error && (
-        <div className="flex-fill">
-          <Alert type="danger" message={isError.message} />
-        </div>
-      )}
-      <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
-          Detail Data Komponen 
+      {isError.error && <Alert type="danger" message={isError.message} />}
+
+      <div className="card mb-4">
+        <div className="card-header bg-primary text-white">
+          Detail Data Komponen
         </div>
         <div className="card-body">
           <div className="row mb-3">
@@ -207,10 +204,38 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
               <Label title="Posisi" data={formDataRef.current.posisi} />
             </div>
           </div>
+
+          {/* Map */}
+          {formDataRef.current.latitude && formDataRef.current.longitude ? (
+            <MapContainer
+              center={[
+                parseFloat(formDataRef.current.latitude),
+                parseFloat(formDataRef.current.longitude),
+              ]}
+              zoom={15}
+              style={{ height: 300, width: "100%" }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker
+                position={[
+                  parseFloat(formDataRef.current.latitude),
+                  parseFloat(formDataRef.current.longitude),
+                ]}
+              >
+                <Popup>
+                  {formDataRef.current.lokasi} <br />{" "}
+                  {formDataRef.current.posisi}
+                </Popup>
+              </Marker>
+            </MapContainer>
+          ) : (
+            <p className="text-center text-muted">Map tidak tersedia</p>
+          )}
         </div>
       </div>
-      <br />
-      <div className="lead fw-medium text-center">
+
+      <div className="mb-3 text-center fw-medium">
         History Penggunaan Air Komponen
       </div>
       <br />

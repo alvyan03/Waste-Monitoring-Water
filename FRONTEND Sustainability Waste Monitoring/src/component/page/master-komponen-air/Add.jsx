@@ -24,6 +24,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl:
     "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
 });
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+
+// Fix icon Leaflet supaya marker muncul
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
 
 export default function MasterKomponenAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -85,6 +98,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
   // Handler input
   // MENGAMBIL DAFTAR LOKASI -- END
 
+  // Handler input
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
     const validationError = await validateInput(name, value, userSchema);
@@ -163,6 +177,9 @@ export default function MasterKomponenAdd({ onChangePage }) {
           SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
           onChangePage("index");
         }
+        if (data === "ERROR") throw new Error("Gagal menyimpan data komponen.");
+        SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
+        onChangePage("index");
       } catch (error) {
         setIsError({ error: true, message: error.message });
         setIsError({ error: true, message: error.message });
