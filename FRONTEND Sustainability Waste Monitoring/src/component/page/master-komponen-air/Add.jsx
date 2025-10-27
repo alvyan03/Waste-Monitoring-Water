@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { object, string } from "yup";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
@@ -10,8 +11,6 @@ import DropDown from "../../part/Dropdown";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-
-const posisi = [{ Value: "Hilir", Text: "Hilir" }];
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 
@@ -32,10 +31,14 @@ export default function MasterKomponenAdd({ onChangePage }) {
   const [isLoading, setIsLoading] = useState(false);
   const [listLokasi, setListLokasi] = useState({});
   const [position, setPosition] = useState(null); // lokasi dari map
+  const [position, setPosition] = useState(null); // lokasi dari map
 
   const formDataRef = useRef({
     lokasi: "",
     kondisi: "",
+    posisi: "Hilir",
+    latitude: "",
+    longitude: "",
     posisi: "Hilir",
     latitude: "",
     longitude: "",
@@ -47,32 +50,45 @@ export default function MasterKomponenAdd({ onChangePage }) {
     posisi: string().notRequired(),
     latitude: string().notRequired(),
     longitude: string().notRequired(),
+    lokasi: string().required("Harus dipilih"),
+    kondisi: string().required("Harus diisi"),
+    posisi: string().notRequired(),
+    latitude: string().notRequired(),
+    longitude: string().notRequired(),
   });
 
+  // Ambil daftar lokasi dari API
   // Ambil daftar lokasi dari API
   useEffect(() => {
     const fetchData = async () => {
       setIsError({ error: false, message: "" });
+      setIsError({ error: false, message: "" });
       try {
         const data = await UseFetch(
+          API_LINK + "MasterLokasi/GetListLokasi",
           API_LINK + "MasterLokasi/GetListLokasi",
           {}
         );
         if (data === "ERROR") throw new Error("Gagal mengambil daftar lokasi.");
         setListLokasi(data);
+        if (data === "ERROR") throw new Error("Gagal mengambil daftar lokasi.");
+        setListLokasi(data);
       } catch (error) {
+        setIsError({ error: true, message: error.message });
         setIsError({ error: true, message: error.message });
         setListLokasi({});
       }
     };
     fetchData();
   }, []);
-  // MENGAMBIL DAFTAR LOKASI -- END
 
+  // Handler input
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
     const validationError = await validateInput(name, value, userSchema);
     formDataRef.current[name] = value;
+    setErrors((prev) => ({
+      ...prev,
     setErrors((prev) => ({
       ...prev,
       [validationError.name]: validationError.error,
@@ -80,8 +96,10 @@ export default function MasterKomponenAdd({ onChangePage }) {
   };
 
   // Handler submit
+  // Handler submit
   const handleAdd = async (e) => {
     e.preventDefault();
+    console.log("TOMBOL SIMPAN DIKLIK");
     console.log("TOMBOL SIMPAN DIKLIK");
 
     const validationErrors = await validateAllInputs(
@@ -100,9 +118,26 @@ export default function MasterKomponenAdd({ onChangePage }) {
     }
 
     if (Object.values(validationErrors).every((err) => !err)) {
+    if (!position) {
+      SweetAlert(
+        "Peringatan",
+        "Silakan pilih lokasi di peta terlebih dahulu.",
+        "warning"
+      );
+      return;
+    }
+
+    if (Object.values(validationErrors).every((err) => !err)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
+      setIsError({ error: false, message: "" });
       setErrors({});
+
+      const payload = {
+        ...formDataRef.current,
+        latitude: position.lat,
+        longitude: position.lng,
+      };
 
       const payload = {
         ...formDataRef.current,
@@ -114,15 +149,13 @@ export default function MasterKomponenAdd({ onChangePage }) {
         const data = await UseFetch(
           API_LINK + "MasterKomponenAir/CreateKomponenAir",
           payload
+          payload
         );
-
-        if (data === "ERROR") {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data komponen.");
-        } else {
-          SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
-          onChangePage("index");
-        }
+        if (data === "ERROR") throw new Error("Gagal menyimpan data komponen.");
+        SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
+        onChangePage("index");
       } catch (error) {
+        setIsError({ error: true, message: error.message });
         setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
@@ -142,10 +175,24 @@ export default function MasterKomponenAdd({ onChangePage }) {
     return position ? <Marker position={position} /> : null;
   }
 
+  // Component untuk menangkap klik map
+  function MapClickHandler() {
+    useMapEvents({
+      click(e) {
+        setPosition(e.latlng);
+        formDataRef.current.latitude = e.latlng.lat;
+        formDataRef.current.longitude = e.latlng.lng;
+      },
+    });
+    return position ? <Marker position={position} /> : null;
+  }
+
   if (isLoading) return <Loading />;
 
   return (
     <>
+      {isError.error && <Alert type="danger" message={isError.message} />}
+
       {isError.error && <Alert type="danger" message={isError.message} />}
 
       <form onSubmit={handleAdd}>
@@ -154,6 +201,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
             Tambah Data Komponen Baru
           </div>
           <div className="card-body p-4">
+            <div className="row mb-3">
             <div className="row mb-3">
               <div className="col-lg-4">
                 <DropDown
@@ -167,6 +215,12 @@ export default function MasterKomponenAdd({ onChangePage }) {
                 />
               </div>
               <div className="col-lg-4">
+                <label className="form-label">Posisi</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={formDataRef.current.posisi}
+                  readOnly
                 <label className="form-label">Posisi</label>
                 <input
                   type="text"
@@ -217,8 +271,40 @@ export default function MasterKomponenAdd({ onChangePage }) {
                 </div>
               )}
             </div>
+
+            <div className="mb-3">
+              <label className="form-label">Pilih Lokasi di Peta</label>
+              <div
+                style={{
+                  height: "300px",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                }}
+              >
+                <MapContainer
+                  center={[-6.3485, 107.1484]}
+                  zoom={15}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="© OpenStreetMap contributors"
+                  />
+                  <MapClickHandler />
+                </MapContainer>
+              </div>
+              {position && (
+                <div className="mt-2 text-muted">
+                  <small>
+                    Koordinat: Lat {position.lat.toFixed(5)}, Lng{" "}
+                    {position.lng.toFixed(5)}
+                  </small>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
 
         <div className="float-end my-4 mx-1">
           <Button
