@@ -13,9 +13,9 @@ export default function Button({
     <button
       type={type}
       className={"btn btn-" + classType}
-      {...props}
       title={title}
       disabled={isDisabled}
+      {...props}
     >
       {iconName && (
         <Icon name={iconName} cssClass={label === "" ? undefined : "pe-2"} />

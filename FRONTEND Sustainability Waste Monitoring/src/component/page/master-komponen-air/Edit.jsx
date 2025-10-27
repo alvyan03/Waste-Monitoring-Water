@@ -1,101 +1,159 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { object, string } from "yup";
+import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import { API_LINK } from "../../util/Constants";
 import { validateAllInputs, validateInput } from "../../util/ValidateForm";
 import SweetAlert from "../../util/SweetAlert";
 import UseFetch from "../../util/UseFetch";
 import Button from "../../part/Button";
+import DropDown from "../../part/Dropdown";
 import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
-import Label from "../../part/Label";
-import DropDown from "../../part/Dropdown";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-const letak = [
-  { Value: "Hulu", Text: "Hulu" },
-  { Value: "Hilir", Text: "Hilir" },
-];
-
+// Tambahkan no_komponen ke formData dan payload
 export default function MasterKomponenEdit({ onChangePage, withID }) {
   const [errors, setErrors] = useState({});
   const [isError, setIsError] = useState({ error: false, message: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [listLokasi, setListLokasi] = useState([]);
+  const [position, setPosition] = useState(null);
+
   const [formData, setFormData] = useState({
-    idKomponen: "",
-    nomorKomponen: "",
+    lokasi: "",
     kondisi: "",
-    lantai: "",
-    letak: "",
+    posisi: "Hilir",
+    latitude: "",
+    longitude: "",
+    no_komponen: "", // <-- tambahan
   });
 
   const userSchema = object({
-    nomorKomponen: string()
-      .max(100, "maksimum 100 karakter")
-      .required("harus diisi"),
-    kondisi: string().required("harus diisi"),
-    lantai: string().required("harus diisi"),
-    letak: string().required("harus diisi"),
-    idKomponen: string().required("harus diisi"),
+    lokasi: string().required("Harus dipilih"),
+    kondisi: string().required("Harus diisi"),
+    posisi: string().notRequired(),
+    latitude: string().notRequired(),
+    longitude: string().notRequired(),
+    no_komponen: string().notRequired(), // <-- tambahan
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsError({ error: false, message: "" });
-  
-        // Fetch lokasi
-        const lokasiData = await UseFetch(API_LINK + "MasterLokasi/GetListLokasi2", {});
-        console.log(lokasiData); // Pastikan data lokasi diambil dengan benar
-        if (lokasiData === "ERROR") throw new Error("Gagal mengambil daftar lokasi.");
+        setIsLoading(true);
+
+        const lokasiData = await UseFetch(
+          API_LINK + "MasterLokasi/GetListLokasi",
+          {}
+        );
+        if (lokasiData === "ERROR")
+          throw new Error("Gagal mengambil daftar lokasi.");
         setListLokasi(lokasiData);
-  
-        // Fetch data komponen berdasarkan ID
-        const komponenData = await UseFetch(API_LINK + "MasterKomponenAir/GetDataKomponenAirById", { id: withID });
-        console.log(komponenData); // Pastikan data komponen ada
-        if (komponenData === "ERROR" || komponenData.length === 0) throw new Error("Gagal mengambil data komponen.");
-        setFormData(komponenData[0]); // Update state formData dengan data komponen
+
+        const komponenData = await UseFetch(
+          API_LINK + "MasterKomponenAir/GetDataKomponenAirById",
+          { id: withID }
+        );
+        if (komponenData === "ERROR" || komponenData.length === 0)
+          throw new Error("Gagal mengambil data komponen.");
+
+        const data = komponenData[0];
+
+        let lokasiValue = "";
+        if (Array.isArray(lokasiData)) {
+          const match = lokasiData.find(
+            (item) =>
+              item.Text?.toLowerCase().trim() ===
+              data.lokasi?.toLowerCase().trim()
+          );
+          if (match) lokasiValue = match.Value;
+        }
+
+        setFormData({
+          lokasi: lokasiValue || data.id_lokasi || "",
+          kondisi: data.kondisi || "",
+          posisi: data.posisi || "Hilir",
+          latitude: data.latitude || "",
+          longitude: data.longitude || "",
+          no_komponen: data.no_komponen || "", // <-- isi dari data asli
+        });
+
+        if (data.latitude && data.longitude) {
+          setPosition({
+            lat: parseFloat(data.latitude),
+            lng: parseFloat(data.longitude),
+          });
+        }
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
         setIsLoading(false);
       }
     };
-  
+
     fetchData();
   }, [withID]);
-  
 
   const handleInputChange = async (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     const validationError = await validateInput(name, value, userSchema);
-    setErrors((prevErrors) => ({
-      ...prevErrors,
+    setErrors((prev) => ({
+      ...prev,
       [validationError.name]: validationError.error,
     }));
   };
 
-  const handleAdd = async (e) => {
+  const handleEdit = async (e) => {
     e.preventDefault();
 
-    const validationErrors = await validateAllInputs(formData, userSchema, setErrors);
+    const validationErrors = await validateAllInputs(
+      formData,
+      userSchema,
+      setErrors
+    );
 
-    if (Object.values(validationErrors).every((error) => !error)) {
+    if (!position) {
+      SweetAlert(
+        "Peringatan",
+        "Silakan pilih lokasi di peta terlebih dahulu.",
+        "warning"
+      );
+      return;
+    }
+
+    if (Object.values(validationErrors).every((err) => !err)) {
       setIsLoading(true);
       setIsError({ error: false, message: "" });
       setErrors({});
 
-      try {
-        const data = await UseFetch(API_LINK + "MasterKomponenAir/EditKomponenAir", formData);
+      const username = localStorage.getItem("username") || "Admin";
 
-        if (data === "ERROR") {
-          throw new Error("Terjadi kesalahan: Gagal menyimpan data komponen.");
-        } else {
-          SweetAlert("Sukses", "Data komponen berhasil disimpan", "success");
-          onChangePage("index");
-        }
+      const payload = {
+        p1: withID,
+        p2: formData.no_komponen, // <-- kirim no_komponen asli
+        p3: formData.kondisi,
+        p4: formData.lokasi,
+        p5: "",
+        p6: username, // <-- modif by sesuai login
+        p7: position.lat,
+        p8: position.lng,
+      };
+
+      try {
+        const data = await UseFetch(
+          API_LINK + "MasterKomponenAir/EditKomponenAir",
+          payload
+        );
+        if (data === "ERROR")
+          throw new Error("Gagal memperbarui data komponen.");
+
+        SweetAlert("Sukses", "Data komponen berhasil diperbarui", "success");
+        onChangePage("index");
       } catch (error) {
         setIsError({ error: true, message: error.message });
       } finally {
@@ -104,44 +162,54 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
     }
   };
 
+  function MapClickHandler() {
+    useMapEvents({
+      click(e) {
+        setPosition(e.latlng);
+        setFormData((prev) => ({
+          ...prev,
+          latitude: e.latlng.lat,
+          longitude: e.latlng.lng,
+        }));
+      },
+    });
+    return position ? <Marker position={position} /> : null;
+  }
+
   if (isLoading) return <Loading />;
 
   return (
     <>
-      {isError.error && (
-        <div className="flex-fill">
-          <Alert type="danger" message={isError.message} />
-        </div>
-      )}
-      <form onSubmit={handleAdd}>
+      {isError.error && <Alert type="danger" message={isError.message} />}
+      <form onSubmit={handleEdit}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
             Ubah Data Komponen
           </div>
           <div className="card-body p-4">
-            <div className="row">
-              <div className="col-lg-6">
-                <Label
-                  title="Nomor Komponen"
-                  data={formData.nomorKomponen}
-                  forLabel="nomorKomponen"
-                  isRequired
-                  onChange={handleInputChange}
-                  errorMessage={errors.nomorKomponen}
-                />
-              </div>
-              <div className="col-lg-6">
+            <div className="row mb-3">
+              <div className="col-lg-4">
                 <DropDown
-                  forInput="lantai"
+                  forInput="lokasi"
                   label="Lokasi"
                   arrData={listLokasi}
                   isRequired
-                  value={formData.lantai}
+                  value={formData.lokasi}
                   onChange={handleInputChange}
-                  errorMessage={errors.lantai}
+                  errorMessage={errors.lokasi}
                 />
               </div>
-              <div className="col-lg-6">
+              <div className="col-lg-4">
+                <label className="form-label">Posisi</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  name="posisi"
+                  value={formData.posisi}
+                  readOnly
+                />
+              </div>
+              <div className="col-lg-12">
                 <Input
                   type="textarea"
                   forInput="kondisi"
@@ -151,20 +219,45 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
                   errorMessage={errors.kondisi}
                 />
               </div>
-              <div className="col-lg-6">
-                <DropDown
-                  forInput="letak"
-                  label="Posisi"
-                  arrData={letak}
-                  isRequired
-                  value={formData.letak}
-                  onChange={handleInputChange}
-                  errorMessage={errors.letak}
-                />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Pilih Lokasi di Peta</label>
+              <div
+                style={{
+                  height: "300px",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                }}
+              >
+                <MapContainer
+                  center={
+                    position
+                      ? [position.lat, position.lng]
+                      : [-6.3485, 107.1484]
+                  }
+                  zoom={15}
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution="© OpenStreetMap contributors"
+                  />
+                  <MapClickHandler />
+                </MapContainer>
               </div>
+              {position && (
+                <div className="mt-2 text-muted">
+                  <small>
+                    Koordinat: Lat {position.lat.toFixed(5)}, Lng{" "}
+                    {position.lng.toFixed(5)}
+                  </small>
+                </div>
+              )}
             </div>
           </div>
         </div>
+
         <div className="float-end my-4 mx-1">
           <Button
             classType="secondary me-2 px-4 py-2"
