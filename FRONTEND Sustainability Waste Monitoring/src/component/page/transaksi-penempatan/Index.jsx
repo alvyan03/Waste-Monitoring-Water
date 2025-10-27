@@ -8,6 +8,7 @@ import Table from "../../part/Table";
 import Paging from "../../part/Paging";
 import DropDown from "../../part/Dropdown";
 import Filter from "../../part/Filter";
+import Filter from "../../part/Filter";
 import Alert from "../../part/Alert";
 import Loading from "../../part/Loading";
 
@@ -15,6 +16,10 @@ const initialData = [
   {
     Key: null,
     No: null,
+    "Data Sensor Bocor": null,
+    Judul: null,
+    "Penanggung Jawab": null,
+    "Tanggal Pengecekan": null,
     "Data Sensor Bocor": null,
     Judul: null,
     "Penanggung Jawab": null,
@@ -46,6 +51,12 @@ const filterSortOptions = [
     Value: "[Tanggal Aktual Selesai] desc",
     Text: "Tanggal Aktual Selesai [↓]",
   },
+  { Value: "pnm_tanggal ASC", Text: "Tanggal Pengecekan [↑]" },
+  { Value: "pnm_tanggal DESC", Text: "Tanggal Pengecekan [↓]" },
+  { Value: "kom_id ASC", Text: "Judul [↑]" },
+  { Value: "kom_id DESC", Text: "Judul [↓]" },
+  { Value: "rgn_id ASC", Text: "Penanggung Jawab [↑]" },
+  { Value: "rgn_id DESC", Text: "Penanggung Jawab [↓]" },
 ];
 
 export default function TransaksiPenempatanIndex({ onChangePage }) {
@@ -58,6 +69,9 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
     sortBy: "pnm_tanggal",
     sortDirection: "[Nomor Transaksi] asc",
     status: "ALL",
+    sortBy: "pnm_tanggal",
+    sortDirection: "ASC",
+    status: "Aktif",
     query: "",
   });
 
@@ -66,27 +80,38 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
   const searchFilterStatus = useRef();
 
   const handleSetCurrentPage = (newPage) => {
+  const handleSetCurrentPage = (newPage) => {
     setIsLoading(true);
+    setCurrentFilter((prev) => ({ ...prev, page: newPage }));
+  };
     setCurrentFilter((prev) => ({ ...prev, page: newPage }));
   };
 
   const handleSearch = () => {
     const sortFilter = searchFilterSort.current;
     if (!sortFilter || !sortFilter.value) return;
+    if (!sortFilter || !sortFilter.value) return;
 
     const [sortBy, sortDirection] = sortFilter.value.split(" ");
     setCurrentFilter((prev) => ({
       ...prev,
+    setCurrentFilter((prev) => ({
+      ...prev,
       page: 1,
+      query: searchQuery.current?.value || "",
       query: searchQuery.current?.value || "",
       sortBy,
       sortDirection,
       status: searchFilterStatus.current
         ? searchFilterStatus.current.value
         : "Aktif",
+      status: searchFilterStatus.current
+        ? searchFilterStatus.current.value
+        : "Aktif",
     }));
   };
 
+  const fetchData = async () => {
   const fetchData = async () => {
     setIsLoading(true);
     setIsError(false);
@@ -142,6 +167,45 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
   };
 
   useEffect(() => {
+          pageSize: currentFilter.pageSize,
+          sortBy: currentFilter.sortBy,
+          sortDirection: currentFilter.sortDirection,
+          status: currentFilter.status,
+          query: currentFilter.query,
+        }
+      );
+
+      if (!data || data === "ERROR") {
+        setIsError(true);
+        setCurrentData(initialData);
+      } else if (data.length === 0) {
+        setCurrentData(initialData);
+      } else {
+        const formattedData = data.map((item, index) => ({
+          Key: item.pnm_id || index,
+          No: index + 1,
+          Judul: item.kom_id,
+          "Penanggung Jawab": item.rgn_id,
+          "Tanggal Pengecekan": item.pnm_tanggal,
+          Status: item.pnm_status,
+          Aksi: [
+            "Detail",
+            item.pnm_status === "Tidak Aktif" ? "Edit" : null,
+          ].filter(Boolean),
+          Alignment: Array(6).fill("center"),
+        }));
+        setCurrentData(formattedData);
+      }
+    } catch (err) {
+      console.error(err);
+      setIsError(true);
+      setCurrentData(initialData);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [currentFilter]);
 
@@ -180,6 +244,64 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
             type="none"
             arrData={filterSortOptions}
             defaultValue="[Nomor Transaksi] asc"
+          />
+        </Filter>
+      </div>
+
+      <div className="mt-3">
+        {isLoading ? (
+          <Loading />
+        ) : (
+          <div className="d-flex flex-column">
+            <Table
+              data={currentData}
+              onDetail={onChangePage}
+              onEdit={onChangePage}
+            />
+            <Paging
+              pageSize={PAGE_SIZE}
+              pageCurrent={currentFilter.page}
+              totalData={currentData[0]?.Count || 0}
+              navigation={handleSetCurrentPage}
+            />
+          </div>
+        )}
+      </div>
+    </div>
+    <div className="d-flex flex-column">
+      {isError && (
+        <Alert
+          type="warning"
+          message="Terjadi kesalahan: Gagal mengambil data penempatan."
+        />
+      )}
+
+      <div className="input-group">
+        <Button
+          iconName="add"
+          classType="success"
+          label="Tambah"
+          onClick={() => onChangePage("add")}
+        />
+        <Input
+          ref={searchQuery}
+          forInput="pencarianPenempatan"
+          placeholder="Cari"
+        />
+        <Button
+          iconName="search"
+          classType="primary px-4"
+          title="Cari"
+          onClick={handleSearch}
+        />
+        <Filter>
+          <DropDown
+            ref={searchFilterSort}
+            forInput="ddUrut"
+            label="Urut Berdasarkan"
+            type="none"
+            arrData={filterSortOptions}
+            defaultValue="pnm_tanggal ASC"
           />
         </Filter>
       </div>
