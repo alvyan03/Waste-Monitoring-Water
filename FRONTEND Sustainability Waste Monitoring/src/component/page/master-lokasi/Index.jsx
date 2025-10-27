@@ -17,8 +17,8 @@ const inisialisasiData = [
     No: null,
     "Nama Gedung": null,
     Lantai: null,
-    "Jumlah Hulu" : null,
-    "Jumlah Hilir" : null,
+    "Jumlah Hulu": null,
+    "Jumlah Hilir": null,
     Status: null,
     Count: 0,
   },
@@ -33,7 +33,6 @@ const dataFilterStatus = [
   { Value: "Aktif", Text: "Aktif" },
   { Value: "Tidak Aktif", Text: "Tidak Aktif" },
 ];
-
 
 export default function MasterLokasiIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
@@ -97,12 +96,14 @@ export default function MasterLokasiIndex({ onChangePage }) {
     const fetchData = async () => {
       setIsError(false);
 
+      console.log("FETCH DATA MASTER LOKASI");
+      console.log("Current Filter:", currentFilter);
       try {
         const data = await UseFetch(
           API_LINK + "MasterLokasi/GetDataLokasi",
           currentFilter
         );
-
+        console.log("Data received:", data);
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
@@ -111,8 +112,17 @@ export default function MasterLokasiIndex({ onChangePage }) {
           const formattedData = data.map((value) => ({
             ...value,
             Aksi: ["Toggle", "Detail", "Edit"],
-            Alignment: ["center", "center", "center", "center", "center", "center", "center", "center"],
-          }));          
+            Alignment: [
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+            ],
+          }));
           setCurrentData(formattedData);
         }
       } catch {

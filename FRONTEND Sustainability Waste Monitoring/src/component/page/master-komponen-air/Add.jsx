@@ -10,10 +10,7 @@ import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 
-const posisi = [
-  { Value: "Hulu", Text: "Hulu" },
-  { Value: "Hilir", Text: "Hilir" },
-];
+const posisi = [{ Value: "Hilir", Text: "Hilir" }];
 
 export default function MasterKomponenAdd({ onChangePage }) {
   const [errors, setErrors] = useState({});
@@ -122,7 +119,7 @@ export default function MasterKomponenAdd({ onChangePage }) {
       <form onSubmit={handleAdd}>
         <div className="card">
           <div className="card-header bg-primary fw-medium text-white">
-            Tambah Data Komponen Baru vvvvvvvvvvvvvssssss
+            Tambah Data Komponen Baru
           </div>
           <div className="card-body p-4">
             <div className="row">

@@ -15,9 +15,9 @@ const inisialisasiData = [
   {
     Key: null,
     No: null,
-    "Tanggal": null,
+    Tanggal: null,
     Lokasi: null,
-    "Volume Air" : null,
+    "Volume Air": null,
     Count: 0,
   },
 ];
@@ -35,7 +35,6 @@ export default function TransaksiPenggunaanAirIndex({ onChangePage }) {
     page: 1,
     query: "",
     sort: "[Lokasi] asc",
-
   });
 
   const searchQuery = useRef();
@@ -57,51 +56,59 @@ export default function TransaksiPenggunaanAirIndex({ onChangePage }) {
       return {
         ...prevFilter,
         page: 1,
-        query: searchQuery.current ? searchQuery.current.value : '',
-        sort: searchFilterSort.current ? searchFilterSort.current.value : '[Lokasi] asc',
+        query: searchQuery.current ? searchQuery.current.value : "",
+        sort: searchFilterSort.current
+          ? searchFilterSort.current.value
+          : "[Lokasi] asc",
       };
     });
   }
   function formatDate(dateString) {
-    const days = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+    const days = [
+      "Minggu",
+      "Senin",
+      "Selasa",
+      "Rabu",
+      "Kamis",
+      "Jumat",
+      "Sabtu",
+    ];
     const date = new Date(dateString);
-  
+
     // Mendapatkan nama hari
     const dayName = days[date.getDay()];
-  
+
     // Format tanggal
     const formattedDate = date.toLocaleDateString("id-ID", {
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-  
+
     // Format waktu dengan force 24-hour clock
-    const formattedTime = date.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false, // Menggunakan format 24 jam
-    }).replace(/\./g, ":"); // Mengganti semua titik dengan titik dua
-  
+    const formattedTime = date
+      .toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false, // Menggunakan format 24 jam
+      })
+      .replace(/\./g, ":"); // Mengganti semua titik dengan titik dua
+
     return `${dayName}, ${formattedDate} ${formattedTime}`;
   }
-  
-  
 
   useEffect(() => {
     const fetchData = async () => {
       setIsError(false);
       setIsLoading(true); // Set loading sebelum mulai proses
       try {
-
-  
         // 3. Memanggil API GetDataPenggunaanAir
         const data = await UseFetch(
           API_LINK + "TransaksiPenggunaanAir/GetDataPenggunaanAir",
           currentFilter
         );
-  
+
         if (data === "ERROR") {
           setIsError(true);
           setCurrentData(inisialisasiData); // Reset data jika terjadi error
@@ -111,12 +118,17 @@ export default function TransaksiPenggunaanAirIndex({ onChangePage }) {
           const formattedData = data.map((value) => ({
             ...value,
             "Volume Air": parseFloat(value["Volume Air"]).toFixed(2),
-            "Tanggal": value["Tanggal"] 
-              ? formatDate(value["Tanggal"]) 
-              : "-", // Tetapkan '-' jika tanggal tidak ada
+            Tanggal: value["Tanggal"] ? formatDate(value["Tanggal"]) : "-", // Tetapkan '-' jika tanggal tidak ada
             Aksi: ["Detail"],
-            Alignment: ["center", "center", "center", "center", "center", "center"],
-          }));          
+            Alignment: [
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+            ],
+          }));
           setCurrentData(formattedData);
         }
       } catch (error) {
@@ -126,11 +138,9 @@ export default function TransaksiPenggunaanAirIndex({ onChangePage }) {
         setIsLoading(false); // Set loading selesai setelah proses selesai
       }
     };
-  
+
     fetchData();
   }, [currentFilter]);
-  
-  
 
   return (
     <>
