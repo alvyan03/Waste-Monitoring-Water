@@ -11,7 +11,8 @@ import Input from "../../part/Input";
 import Loading from "../../part/Loading";
 import Alert from "../../part/Alert";
 import "leaflet/dist/leaflet.css";
-import L from "leaflet";
+import Cookies from "js-cookie";
+import { encryptId, decryptId } from "../../util/Encryptor";
 
 // Tambahkan no_komponen ke formData dan payload
 export default function MasterKomponenEdit({ onChangePage, withID }) {
@@ -20,14 +21,15 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
   const [isLoading, setIsLoading] = useState(true);
   const [listLokasi, setListLokasi] = useState([]);
   const [position, setPosition] = useState(null);
+  const username = JSON.parse(decryptId(Cookies.get("activeUser"))).username;
 
   const [formData, setFormData] = useState({
     lokasi: "",
     kondisi: "",
-    posisi: "Hilir",
+    posisi: "",
     latitude: "",
     longitude: "",
-    no_komponen: "", // <-- tambahan
+    no_komponen: "",
   });
 
   const userSchema = object({
@@ -36,7 +38,7 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
     posisi: string().notRequired(),
     latitude: string().notRequired(),
     longitude: string().notRequired(),
-    no_komponen: string().notRequired(), // <-- tambahan
+    no_komponen: string(),
   });
 
   useEffect(() => {
@@ -55,7 +57,7 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
 
         const komponenData = await UseFetch(
           API_LINK + "MasterKomponenAir/GetDataKomponenAirById",
-          { id: withID }
+          { p1: withID }
         );
         if (komponenData === "ERROR" || komponenData.length === 0)
           throw new Error("Gagal mengambil data komponen.");
@@ -73,12 +75,12 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
         }
 
         setFormData({
-          lokasi: lokasiValue || data.id_lokasi || "",
+          lokasi: lokasiValue || data.lantai || "",
           kondisi: data.kondisi || "",
-          posisi: data.posisi || "Hilir",
+          posisi: data.letak || "Hilir",
           latitude: data.latitude || "",
           longitude: data.longitude || "",
-          no_komponen: data.no_komponen || "", // <-- isi dari data asli
+          no_komponen: data.nomorKomponen || "",
         });
 
         if (data.latitude && data.longitude) {
@@ -131,7 +133,7 @@ export default function MasterKomponenEdit({ onChangePage, withID }) {
       setIsError({ error: false, message: "" });
       setErrors({});
 
-      const username = localStorage.getItem("username") || "Admin";
+      // const username = localStorage.getItem("username") || "Admin";
 
       const payload = {
         p1: withID,
