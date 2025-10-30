@@ -125,48 +125,50 @@ export default function TransaksiPenempatanAdd({ onChangePage }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
-    // Validasi semua input
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,
       setErrors
     );
 
-    if (Object.values(validationErrors).every((err) => !err)) {
-      setIsLoading(true);
-      setIsError({ error: false, message: "" });
+    if (!Object.values(validationErrors).every((err) => !err)) return;
 
-      try {
-        // 🔹 Kirim ke backend dengan fetch langsung
-        const response = await fetch(
-          API_LINK + "TransaksiKontrolKomponenAir/CreateTrsKontrolKomponenAir",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: "Bearer " + localStorage.getItem("jwtToken"),
-            },
-            body: JSON.stringify(formDataRef.current),
-          }
-        );
+    setIsLoading(true);
+    setIsError({ error: false, message: "" });
 
-        console.log("Status:", response.status);
-        const text = await response.text();
-        console.log("Response API:", text);
-        console.log("Data dikirim:", formDataRef.current);
-
-        if (!response.ok || text === "ERROR") {
-          throw new Error("Gagal menyimpan data penempatan");
+    try {
+      const response = await fetch(
+        API_LINK + "TransaksiKontrolKomponenAir/CreateTrsKontrolKomponenAir",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + localStorage.getItem("jwtToken"),
+          },
+          body: JSON.stringify({
+            p1: formDataRef.current.sensor,
+            p2: formDataRef.current.tanggal,
+            p3: formDataRef.current.ruangan,
+            p4: localStorage.getItem("username"), // atau ambil dari jwt decode
+            p5: formDataRef.current.komponen,
+          }),
         }
+      );
 
-        SweetAlert("Sukses", "Data penempatan berhasil disimpan", "success");
-        onChangePage("index");
-      } catch (err) {
-        console.error("Error saat menyimpan:", err);
-        setIsError({ error: true, message: err.message });
-      } finally {
-        setIsLoading(false);
+      const result = await response.text();
+      console.log("Response API:", result);
+
+      if (!response.ok || result.includes("ERROR")) {
+        throw new Error("Gagal menyimpan data");
       }
+
+      SweetAlert("Sukses", "Data berhasil disimpan", "success");
+      onChangePage("index");
+    } catch (err) {
+      console.error(err);
+      setIsError({ error: true, message: err.message });
+    } finally {
+      setIsLoading(false);
     }
   };
 
