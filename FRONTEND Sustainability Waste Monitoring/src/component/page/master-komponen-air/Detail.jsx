@@ -99,16 +99,6 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
                 : formatDate(value["Tanggal Perpindahan Komponen"]),
             "Volume Air":
               value["Volume Air"] === null ? "-" : value["Volume Air"],
-            "Tanggal Penggunaan Air":
-              value["Tanggal Penggunaan Air"] === "-"
-                ? "-"
-                : formatDate(value["Tanggal Penggunaan Air"]),
-            "Tanggal Perpindahan Komponen":
-              value["Tanggal Perpindahan Komponen"] === "-"
-                ? "-"
-                : formatDate(value["Tanggal Perpindahan Komponen"]),
-            "Volume Air":
-              value["Volume Air"] === null ? "-" : value["Volume Air"],
             Alignment: ["center", "center", "center", "center", "center"],
           }));
           setCurrentData(formattedData);
@@ -125,14 +115,11 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
 
   return (
     <>
-      {isError.error && (
-        <div className="flex-fill">
-          <Alert type="danger" message={isError.message} />
-        </div>
-      )}
-      <div className="card">
-        <div className="card-header bg-primary fw-medium text-white">
-          Detail Data Komponen vvvvvvvvv
+      {isError.error && <Alert type="danger" message={isError.message} />}
+
+      <div className="card mb-4">
+        <div className="card-header bg-primary text-white">
+          Detail Data Komponen
         </div>
         <div className="card-body">
           <div className="row mb-3">
@@ -245,4 +232,3 @@ export default function MasterKomponenDetail({ onChangePage, withID }) {
     </>
   );
 }
-

@@ -57,6 +57,27 @@ const filterSortOptions = [
   { Value: "kom_id DESC", Text: "Judul [↓]" },
   { Value: "rgn_id ASC", Text: "Penanggung Jawab [↑]" },
   { Value: "rgn_id DESC", Text: "Penanggung Jawab [↓]" },
+  { Value: "[Nomor Transaksi] asc", Text: "Nomor Transaksi [↑]" },
+  { Value: "[Nomor Transaksi] desc", Text: "Nomor Transaksi [↓]" },
+  { Value: "[Nomor Komponen] asc", Text: "Nomor Komponen [↑]" },
+  { Value: "[Nomor Komponen] desc", Text: "Nomor Komponen [↓]" },
+  { Value: "[Tanggal Rencana Mulai] asc", Text: "Tanggal Rencana Mulai [↑]" },
+  { Value: "[Tanggal Rencana Mulai] desc", Text: "Tanggal Rencana Mulai [↓]" },
+  {
+    Value: "[Tanggal Rencana Selesai] asc",
+    Text: "Tanggal Rencana Selesai [↑]",
+  },
+  {
+    Value: "[Tanggal Rencana Selesai] desc",
+    Text: "Tanggal Rencana Selesai [↓]",
+  },
+  { Value: "[Tanggal Pengecekan] asc", Text: "Tanggal Pengecekan [↑]" },
+  { Value: "[Tanggal Pengecekan] desc", Text: "Tanggal Pengecekan [↓]" },
+  { Value: "[Tanggal Aktual Selesai] asc", Text: "Tanggal Aktual Selesai [↑]" },
+  {
+    Value: "[Tanggal Aktual Selesai] desc",
+    Text: "Tanggal Aktual Selesai [↓]",
+  },
 ];
 
 export default function TransaksiPenempatanIndex({ onChangePage }) {
@@ -70,8 +91,8 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
     sortDirection: "[Nomor Transaksi] asc",
     status: "ALL",
     sortBy: "pnm_tanggal",
-    sortDirection: "ASC",
-    status: "Aktif",
+    sortDirection: "[Nomor Transaksi] asc",
+    status: "ALL",
     query: "",
   });
 
@@ -118,7 +139,14 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
     try {
       const data = await UseFetch(
         API_LINK + "TransaksiKontrolKomponenAir/GetDataTrsKontrolKomponenAir",
+        API_LINK + "TransaksiKontrolKomponenAir/GetDataTrsKontrolKomponenAir",
         {
+          // page: currentFilter.page,
+          // pageSize: currentFilter.pageSize,
+          // sortBy: currentFilter.sortBy,
+          // sortDirection: currentFilter.sortDirection,
+          // status: currentFilter.status,
+          // query: currentFilter.query,
           // page: currentFilter.page,
           // pageSize: currentFilter.pageSize,
           // sortBy: currentFilter.sortBy,
@@ -170,24 +198,30 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
           pageSize: currentFilter.pageSize,
           sortBy: currentFilter.sortBy,
           sortDirection: currentFilter.sortDirection,
-          status: currentFilter.status,
           query: currentFilter.query,
+          sortBy: currentFilter.sortDirection,
+          status: currentFilter.status,
         }
       );
-
-      if (!data || data === "ERROR") {
+      console.log(data);
+      console.log(currentFilter);
+      if (
+        !data ||
+        data === "ERROR" ||
+        !Array.isArray(data) ||
+        data.length === 0
+      ) {
         setIsError(true);
-        setCurrentData(initialData);
-      } else if (data.length === 0) {
         setCurrentData(initialData);
       } else {
         const formattedData = data.map((item, index) => ({
-          Key: item.pnm_id || index,
+          Key: item.Key || index,
           No: index + 1,
-          Judul: item.kom_id,
-          "Penanggung Jawab": item.rgn_id,
-          "Tanggal Pengecekan": item.pnm_tanggal,
-          Status: item.pnm_status,
+          Judul: item.Judul,
+          Kondisi: item.Kondisi,
+          "Nomor Komponen": item["Nomor Komponen"],
+          PIC: item.PIC,
+          "Status Perbaikan": item["Status Perbaikan"],
           Aksi: [
             "Detail",
             item.pnm_status === "Tidak Aktif" ? "Edit" : null,
@@ -197,7 +231,6 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
         setCurrentData(formattedData);
       }
     } catch (err) {
-      console.error(err);
       setIsError(true);
       setCurrentData(initialData);
     } finally {
@@ -301,7 +334,7 @@ export default function TransaksiPenempatanIndex({ onChangePage }) {
             label="Urut Berdasarkan"
             type="none"
             arrData={filterSortOptions}
-            defaultValue="pnm_tanggal ASC"
+            defaultValue="[Nomor Transaksi] asc"
           />
         </Filter>
       </div>

@@ -125,7 +125,6 @@ export default function TransaksiPenempatanAdd({ onChangePage }) {
   const handleAdd = async (e) => {
     e.preventDefault();
 
-    // Validasi semua input
     const validationErrors = await validateAllInputs(
       formDataRef.current,
       userSchema,

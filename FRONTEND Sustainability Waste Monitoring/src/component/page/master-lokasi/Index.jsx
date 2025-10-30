@@ -307,14 +307,12 @@ export default function MasterLokasiIndex({ onChangePage }) {
     const fetchData = async () => {
       setIsError(false);
 
-      console.log("FETCH DATA MASTER LOKASI");
-      console.log("Current Filter:", currentFilter);
       try {
         const data = await UseFetch(
           API_LINK + "MasterLokasi/GetDataLokasi",
           currentFilter
         );
-        console.log("Data received:", data);
+
         if (data === "ERROR") {
           setIsError(true);
         } else if (data.length === 0) {
