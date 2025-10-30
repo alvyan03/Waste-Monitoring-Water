@@ -27,7 +27,6 @@ const dataFilterSort = [
   { Value: "[Nomor Komponen] desc", Text: "Nomor Komponen [↓]" },
 ];
 
-
 export default function MasterKomponenIndex({ onChangePage }) {
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -97,7 +96,14 @@ export default function MasterKomponenIndex({ onChangePage }) {
           const formattedData = data.map((value) => ({
             ...value,
             Aksi: ["Detail", "Edit"],
-            Alignment: ["center", "center", "center", "center", "center", "center"],
+            Alignment: [
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+              "center",
+            ],
           }));
           setCurrentData(formattedData);
         }
@@ -161,8 +167,11 @@ export default function MasterKomponenIndex({ onChangePage }) {
             <div className="d-flex flex-column">
               <Table
                 data={currentData}
-                onDetail={onChangePage}
-                onEdit={onChangePage}
+                onDetail={(page, id) => onChangePage(page, id)}
+                onEdit={(page, id) => {
+                  console.log("ID untuk edit:", id);
+                  onChangePage(page, id);
+                }}
               />
               <Paging
                 pageSize={PAGE_SIZE}
